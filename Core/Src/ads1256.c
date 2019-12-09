@@ -4,6 +4,9 @@
  *  Created on: Dec 9, 2019
  *      Author: Mirtcho
  */
+/* please look here */
+/* https://github.com/adienakhmad/ADS1256/blob/master/ADS1256.cpp  */
+
 #include "stdint.h"
 #include "main.h"
 #include "ads1256.h"
@@ -13,6 +16,7 @@ extern SPI_HandleTypeDef hspi4;
 void ads_send_cmd(uint8_t cmd,uint8_t cmd2,uint32_t *rx_data,uint8_t rx_len)
 {
 	/* NSS=0  */
+	HAL_GPIO_WritePin(SPI_NSS_SW_GPIO_Port, SPI_NSS_SW_Pin, GPIO_PIN_RESET);
 	/* tx CMD byte */
 
 	if (HAL_SPI_Transmit(&hspi4, &cmd, 1 , 1000) != HAL_OK)
@@ -37,8 +41,8 @@ void ads_send_cmd(uint8_t cmd,uint8_t cmd2,uint32_t *rx_data,uint8_t rx_len)
 			while(1){}
 		}
 	}
-	/* ToDo */
 	/* NSS=1  */
+	HAL_GPIO_WritePin(SPI_NSS_SW_GPIO_Port, SPI_NSS_SW_Pin, GPIO_PIN_RESET);
 }
 
 
