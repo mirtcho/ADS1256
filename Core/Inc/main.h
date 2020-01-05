@@ -60,8 +60,6 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define SPI_NSS_SW_Pin GPIO_PIN_3
 #define SPI_NSS_SW_GPIO_Port GPIOE
-#define ADS_DRDY_Pin GPIO_PIN_4
-#define ADS_DRDY_GPIO_Port GPIOE
 #define B1_Pin GPIO_PIN_13
 #define B1_GPIO_Port GPIOC
 #define LD1_Pin GPIO_PIN_0
