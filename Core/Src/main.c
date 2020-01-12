@@ -16,6 +16,7 @@
   *
   ******************************************************************************
   */
+#include "ads1256.h"
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -76,7 +77,7 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-
+uint8_t reg_val[16];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -87,7 +88,7 @@ static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_SPI4_Init(void);
 /* USER CODE BEGIN PFP */
-
+uint32_t adc_data=0x12345678;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -129,7 +130,18 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_SPI4_Init();
   /* USER CODE BEGIN 2 */
-
+  //ads_wakeup();HAL_Delay(1);
+  ads_reset();HAL_Delay(1);
+  ads_self_cal();HAL_Delay(2);
+  adc_data = ads_read_data();
+  while(1)
+  {
+  for (uint8_t i=0;i<10;i++)
+  {
+	  reg_val[i]=ads_read_register(i);
+  }
+  HAL_GPIO_WritePin(SPI_NSS_SW_GPIO_Port, SPI_NSS_SW_Pin, GPIO_PIN_SET);
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */

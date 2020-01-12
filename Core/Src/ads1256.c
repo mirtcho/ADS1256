@@ -23,6 +23,7 @@ void ads_send_cmd(uint8_t cmd,uint8_t cmd2,uint32_t *rx_data,uint8_t rx_len)
 	{
 		while(1){}
 	}
+#if 1
 	if (((cmd&0xf0)==READ_REG_CMD) ||((cmd&0xf0)==WRITE_REG_CMD))
 	{
 		if (HAL_SPI_Transmit(&hspi4, &cmd2, 1 , 1000) != HAL_OK)
@@ -30,10 +31,10 @@ void ads_send_cmd(uint8_t cmd,uint8_t cmd2,uint32_t *rx_data,uint8_t rx_len)
 			while(1){}
 		}
 	}
-
+#endif
 	if (rx_len>0)
 	{
-		HAL_Delay(1);
+		//HAL_Delay(1);
 		/*send dummy data and receive */
 		uint32_t dummy=0;
 		if (HAL_SPI_TransmitReceive(&hspi4, (uint8_t*)&dummy,(uint8_t*) rx_data, rx_len, 1000) !=HAL_OK)
@@ -88,6 +89,8 @@ void ads_reset()
 {
 	uint32_t dummy=0;
 	ads_send_cmd(RESET_CMD,NULL_CMD2,&dummy,0);
+	drv_ready=false;
+	while (!drv_ready){}
 }
 uint32_t ads_read_data()
 {

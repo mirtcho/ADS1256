@@ -8,6 +8,9 @@
 #ifndef INC_ADS1256_H_
 #define INC_ADS1256_H_
 
+#include "stdint.h"
+#include "stdbool.h"
+
 /* ADS1256 commands */
 #define WAKEUP_CMD		0x0
 #define READ_DATA_CMD 	0x1
@@ -35,5 +38,14 @@
 #define FSC1_REG		0x9
 #define FSC2_REG		0xA
 
+volatile bool drv_ready;
+
+void ads_wakeup();
+uint8_t ads_read_register(uint8_t reg);
+void    ads_write_register(uint8_t reg,uint8_t value);
+void ads_self_cal();
+void ads_sync();
+void ads_reset();
+uint32_t ads_read_data();
 
 #endif /* INC_ADS1256_H_ */

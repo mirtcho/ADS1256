@@ -16,6 +16,10 @@
   *
   ******************************************************************************
   */
+#include "stdint.h"
+#include "stdbool.h"
+
+extern volatile bool drv_ready;
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -203,9 +207,10 @@ void SysTick_Handler(void)
 void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
-
+  drv_ready=true;
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+
   /* USER CODE BEGIN EXTI4_IRQn 1 */
 
   /* USER CODE END EXTI4_IRQn 1 */
