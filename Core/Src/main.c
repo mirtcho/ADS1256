@@ -35,6 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+//#define AUTO_CALIBRATION
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -147,7 +148,7 @@ int main(void)
   {
     /* USER CODE END WHILE */
   mma_delay(250000+spi_free()); //self calibration every 2 sec
-#if 0
+#ifdef AUTO_CALIBRATION
   /* wait for free spi channel */
   while(!spi_free()){}
   __disable_irq();

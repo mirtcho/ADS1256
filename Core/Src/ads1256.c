@@ -11,6 +11,9 @@
 #include "main.h"
 #include "ads1256.h"
 
+#define POSITIVE_CHANNEL 0
+#define NEGATIVE_CHANNEL 1
+
 #define DEBUG_MONITOR
 
 extern SPI_HandleTypeDef hspi4;
@@ -153,15 +156,13 @@ void ads_init()
 	  ads_reset();HAL_Delay(1);
 	  ads_stop_contunue_data();
 	  //write status register = 0x01 MSB First, Auto-Calibration disabled, Analog Input Buffer Enabled=0x3. 0x1= disable buffer
-	  ads_write_register (STATUS_REG,0x1); HAL_Delay(1);
+	  ads_write_register (STATUS_REG,0x3); HAL_Delay(1);
 	  // 0x20->Clock Out Frequency = fCLKIN, Sensor Detect OFF, gain ,0x25 for setting gain to 32, 0x27 to 64
 	  ads_write_register (ADCON_REG,0x00); HAL_Delay(1);// 0x0 CLK out disabled
-	  /* set data rate 0b11000000 = 3,750Ks/sec */
-	  ads_write_register (DRATE_REG,0x82); HAL_Delay(1);//0x82=100S/sec  0x3=2,5S/sec
+	  /* set data rate 0b11000000 = 3,750Ks/sec 0x82=100S/sec 0x3=2,5S/sec */
+	  ads_write_register (DRATE_REG,0x82); HAL_Delay(1);
 	  /* select AnIn channels differential */
-	  uint8_t positive_ch = 0;
-	  uint8_t negative_ch = 1;
-	  ads_write_register (MUX_REG,((positive_ch<<4)|negative_ch)); HAL_Delay(1);
+	  ads_write_register (MUX_REG,((POSITIVE_CHANNEL<<4)|NEGATIVE_CHANNEL)); HAL_Delay(1);
 
 
 	  /* perform self calibration */
