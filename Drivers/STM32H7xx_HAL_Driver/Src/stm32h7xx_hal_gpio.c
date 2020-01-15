@@ -248,7 +248,7 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
       if ((GPIO_Init->Mode & EXTI_MODE) == EXTI_MODE)
       {
         /* Enable SYSCFG Clock */
-        __HAL_RCC_SYSCFG_CLK_ENABLE();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   __HAL_RCC_SYSCFG_CLK_ENABLE();
 
         temp = SYSCFG->EXTICR[position >> 2U];
         temp &= ~(0x0FUL << (4U * (position & 0x03U)));

@@ -14,9 +14,13 @@
 /* ADS1256 commands */
 #define WAKEUP_CMD		0x0
 #define READ_DATA_CMD 	0x1
-
+/*start/stop command of read data continuously */
+#define RDATAC_CMD		0x3
+#define SDATAC_CMD		0xf
+/* R/W reagisters cmd */
 #define READ_REG_CMD	0x10
 #define WRITE_REG_CMD	0x50
+
 #define SELF_CAL_CMD	0xf0
 #define SYNC_CMD		0xfc
 #define RESET_CMD		0xfe
@@ -40,12 +44,21 @@
 
 volatile bool drv_ready;
 
+
 void ads_wakeup();
-uint8_t ads_read_register(uint8_t reg);
-void    ads_write_register(uint8_t reg,uint8_t value);
-void ads_self_cal();
 void ads_sync();
 void ads_reset();
+
+void ads_stop_contunue_data ();
+void ads_start_contunue_data ();
+
+uint8_t ads_read_register(uint8_t reg);
+void ads_write_register(uint8_t reg,uint8_t value);
+void ads_self_cal();
 uint32_t ads_read_data();
+
+bool spi_free();
+
+void ads_init();
 
 #endif /* INC_ADS1256_H_ */

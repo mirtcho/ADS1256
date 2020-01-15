@@ -18,7 +18,7 @@
   */
 #include "stdint.h"
 #include "stdbool.h"
-
+#include "ads1256.h"
 extern volatile bool drv_ready;
 /* USER CODE END Header */
 
@@ -204,13 +204,49 @@ void SysTick_Handler(void)
 /**
   * @brief This function handles EXTI line4 interrupt.
   */
+/* Vref=2,4891V    Gain =2*Vref/2^23  */
+#define ADC_GAIN 0.00000059173107147216796875
+static uint32_t adc_data;
+double v_lpf=1.6;
+volatile double v_min=3.0f;
+volatile double v_max=1.0f;
+volatile double v_pp=0.0f;
+volatile double v_sample;
+int16_t start_counter=0;
+extern bool ads_initialized;
 void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
   drv_ready=true;
+  if (ads_initialized)
+  {
+	  adc_data = ads_read_data();
+	  v_sample= ((int32_t)adc_data)*ADC_GAIN;
+	  if ((v_sample>1.0) &&(v_sample<2.0))
+	  {
+		  if (start_counter < 500)
+		  {
+			  /* LPF filter startup behavior */
+			  start_counter++;
+			  v_lpf+= 0.1*(v_sample-v_lpf);
+		  }
+		  else
+		  {
+			  v_lpf+= 0.001*(v_sample-v_lpf);
+			  if (v_lpf>v_max)
+			  {
+				  v_max=v_lpf;
+			  }
+			  if (v_lpf<v_min)
+			  {
+				  v_min=v_lpf;
+			  }
+			  v_pp=v_max-v_min;
+		  }
+	  }
+  }
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
-
   /* USER CODE BEGIN EXTI4_IRQn 1 */
 
   /* USER CODE END EXTI4_IRQn 1 */

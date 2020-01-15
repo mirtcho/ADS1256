@@ -77,7 +77,7 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-uint8_t reg_val[16];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -88,12 +88,18 @@ static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_SPI4_Init(void);
 /* USER CODE BEGIN PFP */
-uint32_t adc_data=0x12345678;
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+float mma_delay(int32_t d)
+{
+	float s=0.0f;
+	for (uint32_t i=0;i<=d;i++)
+		s+=123.345f*sin(i);
+	return s;
+}
 /* USER CODE END 0 */
 
 /**
@@ -130,25 +136,25 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_SPI4_Init();
   /* USER CODE BEGIN 2 */
-  //ads_wakeup();HAL_Delay(1);
-  ads_reset();HAL_Delay(1);
-  ads_self_cal();HAL_Delay(2);
-  adc_data = ads_read_data();
-  while(1)
-  {
-  for (uint8_t i=0;i<10;i++)
-  {
-	  reg_val[i]=ads_read_register(i);
-  }
-  HAL_GPIO_WritePin(SPI_NSS_SW_GPIO_Port, SPI_NSS_SW_Pin, GPIO_PIN_SET);
-  }
+  ads_init();
   /* USER CODE END 2 */
+ 
+ 
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
+  mma_delay(250000+spi_free()); //self calibration every 2 sec
+#if 0
+  /* wait for free spi channel */
+  while(!spi_free()){}
+  __disable_irq();
+  /* perform self calibration */
+  ads_self_cal();mma_delay(300+spi_free()); //to be sure that self cal is ready 21msec @100s/Sec
+  __enable_irq();
+#endif
 
     /* USER CODE BEGIN 3 */
   }
@@ -293,7 +299,7 @@ static void MX_SPI4_Init(void)
   hspi4.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi4.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi4.Init.NSS = SPI_NSS_SOFT;
-  hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+  hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
   hspi4.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi4.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi4.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -441,7 +447,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : PE4 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
