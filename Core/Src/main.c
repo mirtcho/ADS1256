@@ -35,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-//#define AUTO_CALIBRATION
+#define AUTO_CALIBRATION
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/

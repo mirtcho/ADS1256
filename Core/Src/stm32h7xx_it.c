@@ -205,15 +205,24 @@ void SysTick_Handler(void)
   * @brief This function handles EXTI line4 interrupt.
   */
 /* Vref=2,4891V    Gain =2*Vref/2^23  */
-#define ADC_GAIN 0.00000059173107147216796875
+//#define ADC_GAIN 0.00000059173107147216796875
+/* back calcl vfrom my Fluke183 Vref=2.48217V */
+//#define ADC_GAIN 0.00000059179544449
+/*used caclulated for Vref=2.48217 but corected to fluke sebastian */
+#define ADC_GAIN 0.000000591933988976
+
 static uint32_t adc_data;
-double v_lpf=1.6;
+double v_lpf=1.306332;
 volatile double v_min=3.0f;
 volatile double v_max=1.0f;
 volatile double v_pp=0.0f;
 volatile double v_sample;
 int16_t start_counter=0;
 extern bool ads_initialized;
+/* sample buffer data */
+uint32_t skipped_samples=0;
+uint32_t sample_index=0;
+float s_buffer[1800];//T=10h @3s/min
 void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
@@ -224,24 +233,33 @@ void EXTI4_IRQHandler(void)
 	  v_sample= ((int32_t)adc_data)*ADC_GAIN;
 	  if ((v_sample>1.0) &&(v_sample<2.0))
 	  {
-		  if (start_counter < 500)
+		  if (start_counter < 2500)
 		  {
 			  /* LPF filter startup behavior */
 			  start_counter++;
-			  v_lpf+= 0.1*(v_sample-v_lpf);
+			  v_lpf+= 0.005*(v_sample-v_lpf);
 		  }
 		  else
 		  {
 			  v_lpf+= 0.001*(v_sample-v_lpf);
+			  /* update statistics min/max */
 			  if (v_lpf>v_max)
 			  {
 				  v_max=v_lpf;
+				  v_pp=v_max-v_min;
 			  }
 			  if (v_lpf<v_min)
 			  {
 				  v_min=v_lpf;
+				  v_pp=v_max-v_min;
 			  }
-			  v_pp=v_max-v_min;
+			  /* fill sample buffer sample rate is 100s/sec -> 1s/20sec */
+			  if (skipped_samples++>=2000) //20sec
+			  {
+				  skipped_samples=0;
+				  s_buffer[sample_index]=v_lpf;
+				  sample_index++;
+			  }
 		  }
 	  }
   }

@@ -160,7 +160,7 @@ void ads_init()
 	  // 0x20->Clock Out Frequency = fCLKIN, Sensor Detect OFF, gain ,0x25 for setting gain to 32, 0x27 to 64
 	  ads_write_register (ADCON_REG,0x00); HAL_Delay(1);// 0x0 CLK out disabled
 	  /* set data rate 0b11000000 = 3,750Ks/sec 0x82=100S/sec 0x3=2,5S/sec */
-	  ads_write_register (DRATE_REG,0x82); HAL_Delay(1);
+	  ads_write_register (DRATE_REG,0x82); HAL_Delay(1); //Word=0xc0 -> it runs good at 3,75KS/sec Fspi=1MH, according to scope picture
 	  /* select AnIn channels differential */
 	  ads_write_register (MUX_REG,((POSITIVE_CHANNEL<<4)|NEGATIVE_CHANNEL)); HAL_Delay(1);
 
