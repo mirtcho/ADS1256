@@ -156,7 +156,7 @@ void ads_init()
 	  ads_reset();HAL_Delay(1);
 	  ads_stop_contunue_data();
 	  //write status register = 0x01 MSB First, Auto-Calibration disabled, Analog Input Buffer Enabled=0x3. 0x1= disable buffer
-	  ads_write_register (STATUS_REG,0x3); HAL_Delay(1);
+	  ads_write_register (STATUS_REG,0x1); HAL_Delay(1);
 	  // 0x20->Clock Out Frequency = fCLKIN, Sensor Detect OFF, gain ,0x25 for setting gain to 32, 0x27 to 64
 	  ads_write_register (ADCON_REG,0x00); HAL_Delay(1);// 0x0 CLK out disabled
 	  /* set data rate 0b11000000 = 3,750Ks/sec 0x82=100S/sec 0x3=2,5S/sec */
