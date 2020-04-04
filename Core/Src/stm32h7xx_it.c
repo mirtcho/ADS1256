@@ -19,6 +19,8 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "ads1256.h"
+#include "stdio.h"
+
 extern volatile bool drv_ready;
 /* USER CODE END Header */
 
@@ -211,7 +213,10 @@ void SysTick_Handler(void)
 /*used caclulated for Vref=2.48217 but corected to fluke sebastian */
 #define ADC_GAIN 0.000000594783
 
+#define V_SAMPLE_MIN 0.01
+#define V_SAMPLE_MAX 5.00
 
+/* ToDo clean up this section in one AnIn. structure */
 static uint32_t adc_data;
 double v_lpf=2.048645;  /*2.0474V measured with fluke tony */
 volatile double v_min=3.0f;
@@ -222,25 +227,22 @@ int16_t start_counter=0;
 extern bool ads_initialized;
 /* sample buffer data */
 uint32_t skipped_samples=0;
-uint32_t sample_index=0;
-float s_buffer[1800];//T=30h @1sample/min
-void EXTI4_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI4_IRQn 0 */
-  drv_ready=true;
-  if (ads_initialized)
-  {
-	  adc_data = ads_read_data();
-	  adc_data = 0x1000000-adc_data; //invert sign to keep voltage positive
+int log_index=0;
 
-	  v_sample= ((int32_t)adc_data)*ADC_GAIN;
-	  if ((v_sample>1.90) &&(v_sample<2.15))
-	  {
-		  if (start_counter < 2500)
+/* Temperature vars */
+double t_adc_ref_lpf=20.0;
+
+double t_ext_ref_lpf=20.0;
+
+static void analog_input_measurements()
+{
+	if ((v_sample>V_SAMPLE_MIN) &&(v_sample<V_SAMPLE_MAX))
+	{
+		  if (start_counter < 500)
 		  {
 			  /* LPF filter startup behavior */
 			  start_counter++;
-			  v_lpf+= 0.02*(v_sample-v_lpf);
+			  v_lpf+= 0.1*(v_sample-v_lpf);
 		  }
 		  else
 		  {
@@ -257,13 +259,51 @@ void EXTI4_IRQHandler(void)
 				  v_pp=v_max-v_min;
 			  }
 			  /* fill sample buffer sample rate is 100s/sec -> 1sample/20sec */
-			  if (skipped_samples++>=6000) //60sec
+			  if (skipped_samples++>=1000) //10sec
 			  {
 				  skipped_samples=0;
-				  s_buffer[sample_index]=v_lpf;
-				  sample_index++;
+				  log_index++;
+				  printf("Tadc= %f  Text_ref= %f   V[%d]= %lf \n\r",t_adc_ref_lpf,t_ext_ref_lpf,log_index,v_lpf);
 			  }
 		  }
+	}
+}
+
+static void adc_temperature_measurements(float t_sample)
+{
+	t_adc_ref_lpf+= 0.1*(t_sample-t_adc_ref_lpf);
+}
+
+static void ext_temperature_measurements(float t_sample)
+{
+	t_ext_ref_lpf+= 0.1*(t_sample-t_ext_ref_lpf);
+}
+
+
+void EXTI4_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI4_IRQn 0 */
+  drv_ready=true;
+  if (ads_initialized)
+  {
+	  adc_data = ads_read_data();
+	  adc_data = 0x1000000-adc_data; //invert sign to keep voltage positive
+
+	  v_sample= ((int32_t)adc_data)*ADC_GAIN;
+	  switch (ads_get_selected_adc_channel())
+	  {
+	  case ANALOG:
+		  analog_input_measurements();
+		  break;
+	  case ADC_REF:
+		  adc_temperature_measurements(get_ref_temp(ADC_REF,v_sample));
+		  break;
+	  case EXT_REF:
+		  ext_temperature_measurements(get_ref_temp(EXT_REF,v_sample));
+		  break;
+	  case LAST_CHANNEL:
+	  default:
+		  break;
 	  }
   }
   /* USER CODE END EXTI4_IRQn 0 */

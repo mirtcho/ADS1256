@@ -17,6 +17,7 @@
   ******************************************************************************
   */
 #include "ads1256.h"
+#include "stdio.h"
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -94,13 +95,6 @@ static void MX_SPI4_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-float mma_delay(int32_t d)
-{
-	float s=0.0f;
-	for (uint32_t i=0;i<=d;i++)
-		s+=123.345f*sin(i);
-	return s;
-}
 /* USER CODE END 0 */
 
 /**
@@ -138,6 +132,7 @@ int main(void)
   MX_SPI4_Init();
   /* USER CODE BEGIN 2 */
   ads_init();
+  printf("ADS1256 initialized \n\r");
   /* USER CODE END 2 */
  
  
@@ -147,16 +142,24 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-  mma_delay(250000+spi_free()); //self calibration every 2 sec
-#ifdef AUTO_CALIBRATION
-  /* wait for free spi channel */
-  while(!spi_free()){}
-  __disable_irq();
-  /* perform self calibration */
-  ads_self_cal();mma_delay(300+spi_free()); //to be sure that self cal is ready 21msec @100s/Sec
-  __enable_irq();
-#endif
-
+	/* LOOP schedular      */
+	/* - One minute Analog measurements every 2sec auto calibration */
+	/* - 300msec ADC_REF temperature measurements                  	*/
+	/* - 300msec EXT REF temo measurements							*/
+	/*																*/
+	ads_change_channel(ANALOG);
+    for (uint8_t i=0;i<=30;i++)
+    {
+	  HAL_Delay(2000); //self calibration every 2 sec
+	  #ifdef AUTO_CALIBRATION
+	  ads_perform_self_calib();
+      #endif
+    }
+    ads_change_channel(ADC_REF);
+    ads_change_channel(ADC_REF);
+    HAL_Delay(500);
+    ads_change_channel(EXT_REF);
+    HAL_Delay(500);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

@@ -42,6 +42,13 @@
 #define FSC1_REG		0x9
 #define FSC2_REG		0xA
 
+typedef enum {
+	ANALOG=0,
+	ADC_REF,
+	EXT_REF,
+	LAST_CHANNEL
+}channel_nr_t;
+
 volatile bool drv_ready;
 
 
@@ -59,6 +66,11 @@ uint32_t ads_read_data();
 
 bool spi_free();
 
+/* high level functions - public members */
 void ads_init();
+bool ads_change_channel(channel_nr_t channel_number);
+void ads_perform_self_calib();
+channel_nr_t ads_get_selected_adc_channel();
+float get_ref_temp( channel_nr_t channel, float voltage);
 
 #endif /* INC_ADS1256_H_ */

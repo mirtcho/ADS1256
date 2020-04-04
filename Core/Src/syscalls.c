@@ -55,13 +55,20 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/times.h>
-
+#define UART_PRINTF_MMA
+#ifdef UART_PRINTF_MMA
+#include "stm32h7xx_hal.h" //mma test code
+#endif
 
 /* Variables */
 //#undef errno
 extern int errno;
 extern int __io_putchar(int ch) __attribute__((weak));
 extern int __io_getchar(void) __attribute__((weak));
+
+#ifdef UART_PRINTF_MMA
+extern UART_HandleTypeDef huart3; 
+#endif
 
 register char * stack_ptr asm("sp");
 
@@ -105,13 +112,16 @@ return len;
 
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
+#ifdef UART_PRINTF_MMA
+	HAL_UART_Transmit(&huart3, ptr, len, 0xFFFF);
+#else
 	int DataIdx;
-
 	for (DataIdx = 0; DataIdx < len; DataIdx++)
 	{
-		//__io_putchar(*ptr++);
-		ITM_SendChar(*ptr++);
+		//__io_putchar(*ptr++); original
+		ITM_SendChar(*ptr++); mma version
 	}
+#endif
 	return len;
 }
 
